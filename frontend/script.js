@@ -242,4 +242,36 @@ $(document).ready(function () {
       .empty()
       .append('<option value="">Pilih Provinsi Terlebih Dahulu</option>');
   }
+
+// === Simpan form ke localStorage saat user mengetik ===
+  $("#alamat-form input, #alamat-form select, #alamat-form textarea").on(
+    "input change",
+    function () {
+      const formData = {
+        nama: $("#nama").val(),
+        email: $("#email").val(),
+        provinsi_id: $("#provinsi").val(),
+        kota_id: $("#kota").val(),
+        alamat_lengkap: $("#alamat_lengkap").val(),
+      };
+      localStorage.setItem("alamatForm", JSON.stringify(formData));
+    }
+  );
+
+  // === Saat halaman dimuat, isi ulang form dari localStorage ===
+  $(document).ready(function () {
+    const savedData = localStorage.getItem("alamatForm");
+    if (savedData) {
+      const formData = JSON.parse(savedData);
+      $("#nama").val(formData.nama);
+      $("#email").val(formData.email);
+      $("#provinsi").val(formData.provinsi_id).trigger("change");
+      $("#alamat_lengkap").val(formData.alamat_lengkap);
+
+      // Set kota setelah provinsi ter-load
+      setTimeout(() => {
+        $("#kota").val(formData.kota_id);
+      }, 1000);
+    }
+  });
 });
