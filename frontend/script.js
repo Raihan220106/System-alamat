@@ -1,5 +1,5 @@
 $(document).ready(function () {
-  const API_BASE = "http://localhost:4003/api";
+  const API_BASE = "http://localhost:4010/api";
 
   // Load data awal
   loadProvinsi();
