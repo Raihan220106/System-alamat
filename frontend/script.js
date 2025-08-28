@@ -21,6 +21,9 @@ $(document).ready(function () {
             `<option value="${provinsi.id}">${provinsi.nama}</option>`
           );
         });
+
+        // Setelah provinsi ter-load, coba isi ulang form dari localStorage
+        loadFormFromLocalStorage();
       },
       error: function (xhr, status, error) {
         console.error("Error loading provinsi:", error);
@@ -47,14 +50,21 @@ $(document).ready(function () {
 
           if (data && data.length > 0) {
             data.forEach(function (kota) {
-              console.log("Adding kota:", kota.nama);
               kotaSelect.append(
                 `<option value="${kota.id}">${kota.nama}</option>`
               );
             });
           } else {
-            console.log("No kota data found");
             kotaSelect.append('<option value="">Tidak ada kota</option>');
+          }
+
+          // Jika ada data kota tersimpan di localStorage, set value
+          const savedData = localStorage.getItem("alamatForm");
+          if (savedData) {
+            const formData = JSON.parse(savedData);
+            if (formData.kota_id) {
+              kotaSelect.val(formData.kota_id);
+            }
           }
         },
         error: function (xhr, status, error) {
@@ -65,9 +75,7 @@ $(document).ready(function () {
       });
     } else {
       kotaSelect.empty();
-      kotaSelect.append(
-        '<option value="">Pilih Provinsi Terlebih Dahulu</option>'
-      );
+      kotaSelect.append('<option value="">Pilih Provinsi Terlebih Dahulu</option>');
     }
   });
 
@@ -98,12 +106,8 @@ $(document).ready(function () {
               <td>${alamat.kota_nama || "-"}</td>
               <td>${alamat.alamat_lengkap}</td>
               <td>
-                <button class="action-btn edit-btn" onclick="editAlamat(${
-                  alamat.id
-                })">Edit</button>
-                <button class="action-btn delete-btn" onclick="deleteAlamat(${
-                  alamat.id
-                })">Hapus</button>
+                <button class="action-btn edit-btn" onclick="editAlamat(${alamat.id})">Edit</button>
+                <button class="action-btn delete-btn" onclick="deleteAlamat(${alamat.id})">Hapus</button>
               </td>
             </tr>
           `);
@@ -131,18 +135,10 @@ $(document).ready(function () {
 
     const alamatId = $("#alamat-id").val();
     const method = alamatId ? "PUT" : "POST";
-    const url = alamatId
-      ? `${API_BASE}/alamat/${alamatId}`
-      : `${API_BASE}/alamat`;
+    const url = alamatId ? `${API_BASE}/alamat/${alamatId}` : `${API_BASE}/alamat`;
 
     // Validasi
-    if (
-      !formData.nama ||
-      !formData.email ||
-      !formData.provinsi_id ||
-      !formData.kota_id ||
-      !formData.alamat_lengkap
-    ) {
+    if (!formData.nama || !formData.email || !formData.provinsi_id || !formData.kota_id || !formData.alamat_lengkap) {
       alert("Semua field harus diisi!");
       return;
     }
@@ -160,10 +156,7 @@ $(document).ready(function () {
       error: function (xhr, status, error) {
         console.error("Error saving alamat:", error);
         console.error("Response:", xhr.responseText);
-        alert(
-          "Gagal menyimpan data: " +
-            (xhr.responseJSON?.error || "Unknown error")
-        );
+        alert("Gagal menyimpan data: " + (xhr.responseJSON?.error || "Unknown error"));
       },
     });
   });
@@ -173,7 +166,7 @@ $(document).ready(function () {
     resetForm();
   });
 
-  // Global functions
+  // Edit alamat
   window.editAlamat = function (id) {
     $.ajax({
       url: `${API_BASE}/alamat`,
@@ -184,24 +177,19 @@ $(document).ready(function () {
           $("#alamat-id").val(alamat.id);
           $("#nama").val(alamat.nama);
           $("#email").val(alamat.email);
-          $("#provinsi").val(alamat.provinsi_id);
+          $("#provinsi").val(alamat.provinsi_id).trigger("change");
           $("#alamat_lengkap").val(alamat.alamat_lengkap);
 
-          // Trigger change untuk load kota
-          $("#provinsi").trigger("change");
-
-          // Set kota setelah kota dimuat
-          setTimeout(() => {
-            $("#kota").val(alamat.kota_id);
-          }, 1000);
+          // Set kota setelah provinsi ter-load
+          const interval = setInterval(() => {
+            if ($("#kota option").length > 1) {
+              $("#kota").val(alamat.kota_id);
+              clearInterval(interval);
+            }
+          }, 100);
 
           $("#form-title").text("Edit Alamat");
-          $("html, body").animate(
-            {
-              scrollTop: $("#alamat-form").offset().top - 100,
-            },
-            500
-          );
+          $("html, body").animate({ scrollTop: $("#alamat-form").offset().top - 100 }, 500);
         }
       },
       error: function (xhr, status, error) {
@@ -212,6 +200,7 @@ $(document).ready(function () {
     });
   };
 
+  // Delete alamat
   window.deleteAlamat = function (id) {
     if (confirm("Apakah Anda yakin ingin menghapus alamat ini?")) {
       $.ajax({
@@ -224,54 +213,55 @@ $(document).ready(function () {
         error: function (xhr, status, error) {
           console.error("Error deleting alamat:", error);
           console.error("Response:", xhr.responseText);
-          alert(
-            "Gagal menghapus data: " +
-              (xhr.responseJSON?.error || "Unknown error")
-          );
+          alert("Gagal menghapus data: " + (xhr.responseJSON?.error || "Unknown error"));
         },
       });
     }
   };
 
-  // Reset form
+  // Reset form dan hapus localStorage
   function resetForm() {
     $("#alamat-form")[0].reset();
     $("#alamat-id").val("");
     $("#form-title").text("Tambah Alamat Baru");
-    $("#kota")
-      .empty()
-      .append('<option value="">Pilih Provinsi Terlebih Dahulu</option>');
+    $("#kota").empty().append('<option value="">Pilih Provinsi Terlebih Dahulu</option>');
+    localStorage.removeItem("alamatForm");
   }
 
-// === Simpan form ke localStorage saat user mengetik ===
-  $("#alamat-form input, #alamat-form select, #alamat-form textarea").on(
-    "input change",
-    function () {
-      const formData = {
-        nama: $("#nama").val(),
-        email: $("#email").val(),
-        provinsi_id: $("#provinsi").val(),
-        kota_id: $("#kota").val(),
-        alamat_lengkap: $("#alamat_lengkap").val(),
-      };
-      localStorage.setItem("alamatForm", JSON.stringify(formData));
-    }
-  );
+  // === Simpan form ke localStorage saat user mengetik atau memilih ===
+  function saveFormToLocalStorage() {
+    const formData = {
+      nama: $("#nama").val(),
+      email: $("#email").val(),
+      provinsi_id: $("#provinsi").val(),
+      kota_id: $("#kota").val(),
+      alamat_lengkap: $("#alamat_lengkap").val(),
+    };
+    localStorage.setItem("alamatForm", JSON.stringify(formData));
+  }
 
-  // === Saat halaman dimuat, isi ulang form dari localStorage ===
-  $(document).ready(function () {
+  $("#alamat-form input, #alamat-form select, #alamat-form textarea").on("input change", saveFormToLocalStorage);
+
+  // === Load form dari localStorage saat halaman dimuat ===
+  function loadFormFromLocalStorage() {
     const savedData = localStorage.getItem("alamatForm");
-    if (savedData) {
-      const formData = JSON.parse(savedData);
-      $("#nama").val(formData.nama);
-      $("#email").val(formData.email);
-      $("#provinsi").val(formData.provinsi_id).trigger("change");
-      $("#alamat_lengkap").val(formData.alamat_lengkap);
+    if (!savedData) return;
 
-      // Set kota setelah provinsi ter-load
-      setTimeout(() => {
-        $("#kota").val(formData.kota_id);
-      }, 1000);
+    const formData = JSON.parse(savedData);
+    $("#nama").val(formData.nama || "");
+    $("#email").val(formData.email || "");
+    $("#alamat_lengkap").val(formData.alamat_lengkap || "");
+
+    if (formData.provinsi_id) {
+      $("#provinsi").val(formData.provinsi_id).trigger("change");
+
+      // Tunggu sampai kota ter-load lalu set value kota
+      const interval = setInterval(() => {
+        if ($("#kota option").length > 1) {
+          $("#kota").val(formData.kota_id || "");
+          clearInterval(interval);
+        }
+      }, 100);
     }
-  });
+  }
 });
