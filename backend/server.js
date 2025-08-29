@@ -14,8 +14,8 @@ app.use(express.static("../frontend"));
 // Database connection
 const db = mysql.createConnection({
   host: "localhost",
-  user: "root", // ganti dengan username MySQL Anda
-  password: "", // ganti dengan password MySQL Anda
+  user: "alamat_user", // ganti dengan username MySQL Anda
+  password: "password_baru", // ganti dengan password MySQL Anda
   database: "sistem_alamat",
 });
 
