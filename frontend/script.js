@@ -18,7 +18,7 @@ $(document).ready(function () {
 
         data.forEach(function (provinsi) {
           provinsiSelect.append(
-            `<option value="${id}">${nama}</option>`
+            `<option value="${provinsi.id}">${provinsi.nama}</option>`
           );
         });
 
@@ -102,8 +102,8 @@ $(document).ready(function () {
               <td>${index + 1}</td>
               <td>${alamat.nama}</td>
               <td>${alamat.email}</td>
-              <td>${alamat.provinsi_nama || "-"}</td>
-              <td>${alamat.kota_nama || "-"}</td>
+              <td>${alamat.provinsi_id || "-"}</td>
+              <td>${alamat.kota_id || "-"}</td>
               <td>${alamat.alamat_lengkap}</td>
               <td>
                 <button class="action-btn edit-btn" onclick="editAlamat(${alamat.id})">Edit</button>
