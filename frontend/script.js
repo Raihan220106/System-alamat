@@ -18,7 +18,7 @@ $(document).ready(function () {
 
         data.forEach(function (provinsi) {
           provinsiSelect.append(
-            `<option value="${provinsi.id}">${provinsi.nama}</option>`
+            `<option value="${id}">${nama}</option>`
           );
         });
 
