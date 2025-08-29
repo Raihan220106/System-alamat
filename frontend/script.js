@@ -1,5 +1,5 @@
 $(document).ready(function () {
-  const API_BASE = "http://localhost:3011/api";
+  const API_BASE = "http://localhost:3004/api";
 
   // Load data awal
   loadProvinsi();
@@ -8,7 +8,7 @@ $(document).ready(function () {
   // Load provinsi ke dropdown
   function loadProvinsi() {
     $.ajax({
-      url: `${API_BASE}/provinsi`,
+      url: "http://localhost:3004/api/provinsi",
       method: "GET",
       success: function (data) {
         console.log("Provinsi data received:", data);
@@ -74,7 +74,7 @@ $(document).ready(function () {
   // Load semua alamat
   function loadAlamat() {
     $.ajax({
-      url: `${API_BASE}/alamat`,
+      url: "http://localhost:3004/api/alamat",
       method: "GET",
       success: function (data) {
         console.log("Alamat data received:", data);
