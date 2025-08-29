@@ -1,5 +1,5 @@
 $(document).ready(function () {
-  const API_BASE = "http://localhost:4100/api";
+  const API_BASE = "http://localhost:3002/api";
 
   // Load data awal
   loadProvinsi();
@@ -102,8 +102,8 @@ $(document).ready(function () {
               <td>${index + 1}</td>
               <td>${alamat.nama}</td>
               <td>${alamat.email}</td>
-              <td>${alamat.provinsi_id || "-"}</td>
-              <td>${alamat.kota_id || "-"}</td>
+              <td>${alamat.provinsi_nama || "-"}</td>
+              <td>${alamat.kota_nama || "-"}</td>
               <td>${alamat.alamat_lengkap}</td>
               <td>
                 <button class="action-btn edit-btn" onclick="editAlamat(${alamat.id})">Edit</button>
