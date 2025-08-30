@@ -564,6 +564,10 @@ app.get("/api/debug/kota-by-provinsi/:provinsiId", (req, res) => {
   );
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT, (err) => {
+  if (err) {
+    console.error("Server failed to start:", err);
+  } else {
+    console.log(`Server running on http://localhost:${PORT}`);
+  }
 });
